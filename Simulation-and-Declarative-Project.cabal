@@ -18,7 +18,7 @@ cabal-version:       >=1.10
 
 executable Simulation-and-Declarative-Project
   main-is:             Main.hs
-  --other-modules: 
+  other-modules: Utils Structure Board
   -- other-extensions:
   build-depends:       base >=4.12 && <4.13,
                        random >= 1.1
