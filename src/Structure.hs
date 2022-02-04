@@ -3,7 +3,7 @@ import System.Random
     
 
 --Data Structure :
-data Agent = Agent { row :: Int, column:: Int }deriving (Show,Eq)
+data Agent = Agent { type_:: String,  row :: Int, column:: Int }deriving (Show,Eq)
 
 data Environment = Environment {
         number_Rows :: Int,
@@ -14,7 +14,9 @@ data Environment = Environment {
         corrals :: [Agent],
         dirt :: [Agent],
         t_Rnd :: Int,
-        t_Final:: Int }deriving (Show)
+        t_Final:: Int ,
+        holdChild :: [Agent] }deriving (Show)
+        
 
 data Action = Action { name :: String ,position :: (Int,Int)} deriving (Show)     
 
