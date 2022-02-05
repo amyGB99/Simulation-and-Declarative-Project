@@ -1,5 +1,6 @@
 module Utils where
 import Structure
+import Debug.Trace
 
 --useful methods
 --Vrerificar si una posicion esta dentro del limite del tablero 
@@ -24,6 +25,7 @@ dropElemList [] i j result = result
 dropElemList (x:xs) i j result = if row x == i && column x == j
                                 then  dropElemList xs i j result
                                 else dropElemList xs i j (result ++ [x])
+                                
 -- genera a partir de un i,j las casillas 3x3
 generateSquare3x3:: Int -> Int -> [(Int,Int)]
 generateSquare3x3 i j = let x1  = (i - 1 , j ) 
@@ -42,8 +44,8 @@ returnEmptyIn3x3 envi  pos [] result = result
 returnEmptyIn3x3 envi  pos (x: xs) result =  let i = fst x 
                                                  j = snd x 
                                                   in if not (verifyIsEmpty envi i j ) ||  x == pos || not (verifyInBoard envi i j)
-                                                    then  returnEmptyIn3x3 envi pos xs (result)
-                                                    else returnEmptyIn3x3 envi  pos xs (result ++ [x])
+                                                    then  returnEmptyIn3x3 envi pos xs (result) 
+                                                    else  returnEmptyIn3x3 envi  pos xs (result ++ [x])
 
 --cantidad de ni;os en una casilla 3x3                                                    
 countChildrenIn3x3 ::Environment -> [(Int, Int)]->  Int -> Int    
