@@ -58,71 +58,13 @@ createDirt:: Environment -> (Int,Int) ->  Environment
 createDirt envi i =  createInitialEnvironment (number_Rows envi) (number_Columns envi) (t_Rnd envi) (t_Final envi) ([ robots envi, children envi ,corrals envi, obstacles envi ,(dirt envi) ++ [Agent "Dirt" (fst i) (snd i) ] ]) (holdChild envi)    
 --fin!
 
-
---main :: IO ()
---main  =   do 
---let g = mkStdGen 50  
-      --  let t = 5
-      --  let t_final = 1
-       -- let number_columns = 5
-      --  let number_rows = 4
-      --  let count_children = 1 
-       -- let count_robots  = 1 
-      --  let max_agents = ((number_columns * number_rows) `div`  2 )
-       -- let total = 2 *count_children +  count_robots 
-       -- let max =  max_agents - total 
-       -- let count_dirt = 1
-       -- let count_obstacles = 2
-       -- if max > 0 
-       -- then          
-       --  let total = 2 * count_children +  count_robots 
-             --Robots
-             --list = createAgents count_robots number_rows number_columns g
-             --robots = [ fst x |x <- list]
-             --generators = [ snd x | x <- list] 
-             --g1 = generators!! ((length generators) - 1)
-             -- Children
-             --list1 = createAgents count_children number_rows number_columns g1
-             --children = [ fst x |x <- list1 ] 
-             --generators1 = [ snd x | x <- list1] 
-             --g2 = generators1!! ((length generators1) - 1)
-             --Corrals
-             --list2 = createAgents count_children number_rows number_columns g2
-             --corrals = [ fst x |x <- list2 ] 
-             --generators2 = [ snd x | x <- list2] 
-             --g3 = generators2!! ((length generators2) - 1)
-             --Dirt
-             --list3 = createAgents count_dirt number_rows number_columns g3
-             --dirt = [ fst x |x <- list3 ] 
-             --generators3 = [ snd x | x <- list3] 
-             --g4 = generators3!! ((length generators3) - 1)
-             --Obstacles
-             --list4 = createAgents count_obstacles number_rows number_columns g4
-             --obstacles = [ fst x |x <- list4 ] 
-             --generators4 = [ snd x | x <- list4] 
-             --g5 = generators4!! ((length generators4) - 1)
-             --Environment
-             --agents = [robots, children, corrals,  obstacles, dirt]
-             --init_envi = createInitialEnvironment number_rows number_columns t t_final agents
-             --pirnt_in = printTable init_envi  number_columns number_rows 0 0 "" 
-             --new_state = simulation init_envi g5 
-        
-         --in  do 
-           --     print(init_envi)
-             --   print(dirt)
-               -- print("Dimensions: " ++  show number_rows ++ "x" ++ show number_columns )
-                --print(new_state)
-        --else 
-         --print False     
-        --print True       
-
 main :: IO ()
 main  =   do 
         let g = mkStdGen 50  
         let t = 5
-        let t_final = 2
-        let number_columns = 3
-        let number_rows = 4
+        let t_final = 4
+        let number_columns = 7
+        let number_rows = 6
         let robots = [Agent "Robot" 1 2, Agent "Robot" 0 1] 
         let children = [Agent "Child" 0 1]
         let corrals = [Agent "Corral" 0 2]
@@ -148,7 +90,7 @@ simulation envi  g =  do
                         let t_final = (t_Final envi_rnd) - 1
                         let t = (t_Rnd envi_rnd) - 1
                         let new_envi = changeTimeEnvironment envi_rnd t t_final
-                        if t_Final new_envi  > 0 then trace("Entrooooo") (simulation (printTable new_envi (number_Columns new_envi) (number_Rows new_envi) 0 0 "")  g1)
+                        if t_Final new_envi  > 0 then simulation (printTable new_envi (number_Columns new_envi) (number_Rows new_envi) 0 0 "")  g1
                         else printTable new_envi (number_Columns new_envi) (number_Rows new_envi) 0 0 "" 
         
 --Alter Enviroment 
@@ -158,7 +100,7 @@ alterAgents envi g = let  (envi_robots, g1) =  alterRobots  envi (robots envi) g
                                                         
 alterRobots :: Environment ->  [Agent] -> StdGen -> (Environment,StdGen)
 alterRobots envi [] gen = (envi,gen) 
-alterRobots envi (robot:xs) gen = let actions = trace("AlterRobots") (generateRobotsActions envi (row robot) (column robot) gen) 
+alterRobots envi (robot:xs) gen = let actions = generateRobotsActions envi (row robot) (column robot) gen
                                       new_env = traceShow(actions) (executeRobotActions envi (row robot) (column robot) actions )in alterRobots new_env xs gen 
 
 alterChildren :: Environment -> [Agent] -> StdGen -> (Environment,StdGen)
@@ -196,8 +138,8 @@ generateSquaresMoveChild envi i j gen = let x1  = (i - 1 , j )
                                            in let list  =  verifySquareMoveChild envi [x1,x2,x3,x4] []                   
                                                   ind = (length list)  - 1
                                                   (m,g2) =randomR (0, ind) gen 
-                                                   in (g2,list !! m)
-                                                   --in ( g2,(1,1))
+                                                   --in (g2,list !! m)
+                                                   in ( g2,(1,1))
 
 -- verifica q en esa casilla no hay ni suciedad ni robot ni corrall 
 verifySquareMoveChild :: Environment -> [(Int,Int)]-> [(Int,Int)]->  [(Int,Int)]
@@ -247,7 +189,7 @@ executeChildDirt envi  pos_i pos_f gen = let (i,j) = pos_i
                                              empty = returnEmptyIn3x3 envi (i_f , j_f) list  [] 
                                              count_children = countChildrenIn3x3 envi list 0
                                              (m,g2) = randomR (0, (length empty) - 1 ) gen 
-                                             s = traceShow(empty) (createDirt envi (empty!!m) )
+                                             s =  createDirt envi (empty!!m) 
                                              in (s,g2)
 
 
@@ -256,7 +198,7 @@ generateRobotsActions:: Environment -> Int -> Int -> StdGen -> [Action]
 generateRobotsActions envi row column gen =  let robot = Agent "Robot" row column 
                                                  ways = initialBFS envi row column
                                                in if haveLoadedChild envi robot
-                                                 then let ways_to_corral =  trace("Nene Cargado")(takeChildToCorral envi ways)
+                                                 then let ways_to_corral = takeChildToCorral envi ways
                                                           min1 = minimalPath ways_to_corral  (-1) (ways_to_corral!!0)
                                                           m = snd min1
                                                           in if length m == 3 then [ Action "move" ( m!!1 ) ,Action "move" (m!!2) ,Action "leave child" (m!!2) ]
@@ -264,8 +206,8 @@ generateRobotsActions envi row column gen =  let robot = Agent "Robot" row colum
                                                                   else if length m == 1 then [ Action "leave child" (m!!0)]
                                                                        else [ Action "move" (m!!1), Action "move" (m!!2)]
                                                  else if isLooseChildBool envi (children envi) 
-                                                      then  let list = trace("BuscarNene") (isLooseChild envi (children envi) )
-                                                                ways_to_children = traceShow(ways)  ( takeChildren envi list ways )
+                                                      then  let list = isLooseChild envi (children envi)
+                                                                ways_to_children =  takeChildren envi list ways
                                                                 min2 =  minimalPath ways_to_children (-1) (ways_to_children!!0)
                                                                 m1 = snd min2
                                                              in if length m1 == 2 then [ Action "move" (m1!!1),Action "pick up child" (m1!!1) ]
@@ -273,73 +215,74 @@ generateRobotsActions envi row column gen =  let robot = Agent "Robot" row colum
                                                                   else [ Action "pick up child" (m1!!0) ]
                                                       else if thereIsDirt envi 
                                                            then let list1 = takeDirty ways 
-                                                                    min3 = trace("Limpiar") ( minimalPath list1 (-1) (list1!!0))
+                                                                    min3 = minimalPath list1 (-1) (list1!!0)
                                                                     m2 = snd min3
-                                                                   in  if length m2 >= 2 then [ Action "move" (m2!!1)]
+                                                                   in  if length m2 > 1 then [ Action "move" (m2!!1)]
                                                                        else [ Action "clean up" (m2!!0) ]
                                                             else [Action "move" (row,column)]           
 
 --Execute Robots Actions 
 executeRobotActions :: Environment -> Int -> Int ->  [ Action ] -> Environment
 executeRobotActions envi row column [] = envi
-executeRobotActions envi row column (action:xs) = if  (name action) ==  "move" then executeRobotMove envi row column action else envi   
-                                                                         --"clean up"->
-                                                                        -- "pick up child" ->
-                                                                        -- "leave child"->
+executeRobotActions envi row column (action:xs) = if  (name action) ==  "move" then let  new =  executeRobotMove envi row column action in executeRobotActions new row column xs else envi  
+                                                                        -- "clean up"-> let new =  executeRobotCleanUp envi row column action in executeRobotActions new row column xs   
+                                                                         --"pick up child" -> let new = trace("mooas") executeRobotPickUpChild envi row column action in executeRobotActions new row column xs
+                                                                         --"leave child"-> let new =  executeRobotLeaveChild envi row column action in executeRobotActions new row column xs
 
 executeRobotMove ::  Environment -> Int -> Int -> Action -> Environment   
 executeRobotMove envi i j action = let (i_f,j_f) = (position action) in if haveLoadedChild envi  (Agent "Robot" i j) 
                                                                         then let new = updateEnvironment envi "Robot" (i,j) (i_f,j_f)
                                                                               in updateEnvironment new "Child" (i,j) (i_f,j_f)
                                                                         else  updateEnvironment envi "Robot" (i,j) (i_f,j_f)                                                                      
+executeRobotLeaveChild ::  Environment -> Int -> Int -> Action -> Environment  
+executeRobotLeaveChild envi i j action = let (i_f,j_f) = (position action) ; new = dropElemList (holdChild envi) i_f j_f []; 
+                                          in createInitialEnvironment (number_Rows envi) (number_Columns envi) (t_Rnd envi) (t_Final envi) [(robots envi) ++ (children envi) ++ (corrals envi) ++ (obstacles envi) ++ (dirt envi) ] new 
 
 
+executeRobotCleanUp :: Environment -> Int -> Int -> Action -> Environment 
+executeRobotCleanUp envi i j action = let (i_f,j_f) = (position action); s = dropElemList(dirt envi) i_f j_f []
+                                      in createInitialEnvironment (number_Rows envi) (number_Columns envi) (t_Rnd envi) (t_Final envi) [(robots envi) ++ (children envi) ++ (corrals envi) ++ (obstacles envi) ++ s ] (holdChild envi) 
+
+executeRobotPickUpChild::Environment -> Int -> Int -> Action -> Environment                                                                        
+executeRobotPickUpChild envi i j action = let (i_f,j_f) = (position action); new = (holdChild envi) ++ [Agent "Robot" i_f j_f , Agent "Child" i_f j_f ]
+                                          in trace ("df") (createInitialEnvironment (number_Rows envi) (number_Columns envi) (t_Rnd envi) (t_Final envi) [(robots envi) ++ (children envi) ++ (corrals envi) ++ (obstacles envi) ++ (dirt envi) ] new )
 
 -- Buscar los caminos 
 initialBFS ::Environment -> Int -> Int -> [(Agent,[(Int,Int)])]  
-initialBFS envi i j = bfs envi 0 [((i,j),[(i,j)])] [(i,j)] []
+initialBFS envi i j = bfs envi  i j [((i,j),[(i,j)])] [(i,j)] []
 
-bfs :: Environment -> Int -> [((Int,Int),[(Int,Int)])] -> [(Int,Int)]-> [(Agent,[(Int,Int)])]-> [(Agent,[(Int,Int)])]
-bfs envi pos pending  visited result =  if pos == (number_Rows envi) * ( number_Columns envi) 
-                                        then result
-                                        else let (x, way) = pending!!pos
-                                                 i = fst x
-                                                 j = snd x
-                                                 agents = returnAgent envi i j
-                                                 new = traceShow((i,j, "iiii")) (construct agents way) 
-                                                 new_result =  result ++  new 
-                                                 in if validateAdjacent envi (fst (visited!!0)) (snd (visited!!0)) i j
-                                                    then  let (new_visited, new_pending) = (expand envi pos visited pending ) 
-                                                           in  traceShow((visited,i,j,"aaaaaaaaaaa")) (bfs envi (pos + 1) new_pending new_visited new_result)
-                                                    else traceShow((new_result,i,j, "kakaka")) ( bfs envi (pos + 1) pending visited new_result )
-                                                  
+bfs :: Environment -> Int -> Int -> [((Int,Int),[(Int,Int)])] -> [(Int,Int)]-> [(Agent,[(Int,Int)])]-> [(Agent,[(Int,Int)])]
+bfs envi row column [] visited result = result 
+bfs envi row column (p:pending) visited result = let (x, way) = p
+                                                     i = fst x 
+                                                     j = snd x
+                                                     agents = returnAgent envi i j
+                                                     new = construct agents way 
+                                                     new_result =  result ++  new 
+                                                    in  if validateAdjacent envi row column i j
+                                                         then let (new_visited, new_pending) = expand envi i j way visited pending  
+                                                               in bfs envi row column  new_pending new_visited new_result
+                                                         else bfs envi row column pending visited new_result     
                                                             
 
-expand :: Environment -> Int -> [(Int, Int)] -> [((Int,Int),[(Int,Int)])] -> ([(Int, Int)],[((Int,Int),[(Int,Int)])])
-expand envi pos  visited pending = if pos == (number_Rows envi) * ( number_Columns envi) 
-                                   then (visited,pending)
-                                   else let (x, way) = pending!!pos  
-                                            i = fst x
-                                            j = snd x 
-                                            adjacents = generateAdjacents i j
-                                            y = inBoard envi adjacents 
+expand :: Environment -> Int -> Int -> [(Int, Int)] -> [(Int, Int)] -> [((Int,Int),[(Int,Int)])] -> ([(Int, Int)],[((Int,Int),[(Int,Int)])])
+expand envi i j way visited pending  =  let adjacents = generateAdjacents i j
+                                            y = inBoard envi adjacents
                                             (new_list, new_visited ) = isVisited visited y []
-                                            new_pending = addAdjacentPending new_list pos pending 
-                                        in ( new_visited, new_pending)                                   
-
-
+                                            new_pending = addAdjacentPending new_list way pending 
+                                            in ( new_visited, new_pending)
+                              
 isVisited:: [(Int, Int)] -> [(Int, Int)] -> [(Int, Int)] -> ([(Int, Int)], [(Int, Int)])
 isVisited visited [] result =  (result, visited) 
 isVisited visited (adj: xs) result  = if adj `elem` visited
                               then isVisited visited xs result 
                               else isVisited (visited ++ [adj]) xs (result ++ [adj])
 
-addAdjacentPending :: [(Int, Int)] -> Int -> [((Int,Int),[(Int,Int)])] -> [((Int,Int),[(Int,Int)])] 
-addAdjacentPending  [] pos  pending  = pending
-addAdjacentPending (adj: xs) pos pending =  let (position , way) = pending!!pos
-                                                new = (adj, way ++ [adj]) 
-                                                in  addAdjacentPending xs pos (pending ++ [new])                                           
-f envi = envi
+addAdjacentPending :: [(Int, Int)] -> [(Int, Int)] -> [((Int,Int),[(Int,Int)])] -> [((Int,Int),[(Int,Int)])] 
+addAdjacentPending  []      way  pending  = pending
+addAdjacentPending (adj: xs) way  pending =  let new = (adj, way ++ [adj]) 
+                                              in  addAdjacentPending xs way (pending ++ [new])                                           
+
 generateAdjacents :: Int -> Int -> [(Int,Int)]
 generateAdjacents i j = let x1  = (i - 1 , j ) 
                             x2 = (i , j + 1)      
@@ -397,6 +340,7 @@ takeChildToCorral envi []  = []
 takeChildToCorral envi ( x : xs) = if (type_ (fst x) == "Corral") &&  not (elementBelongs (children envi) (row (fst x)) (column (fst x))) 
                                        then x: takeChildToCorral envi xs 
                                        else takeChildToCorral envi xs
+
 takeChildren :: Environment -> [Agent] -> [(Agent,[(Int,Int)])] -> [(Agent,[(Int,Int)])]
 takeChildren envi []  list = []
 takeChildren envi (children_out:xs)  list = let list1 = takeChildren1 envi children_out list  in list1 ++ takeChildren envi xs list
@@ -409,7 +353,6 @@ takeDirty :: [(Agent,[(Int,Int)])] -> [(Agent,[(Int,Int)])]
 takeDirty []    = []
 takeDirty (item:xs) = let agent = (fst item) in if type_ agent == "Dirt" then item : takeDirty xs else takeDirty xs
                                             
-
 minimalPath :: [(Agent,[(Int,Int)])] -> Int ->  (Agent,[(Int,Int)]) -> (Agent,[(Int,Int)]) 
 minimalPath [] min result = result
 minimalPath (x:xs) (-1) result  = let min1 = length (snd x) in minimalPath xs min1  x
