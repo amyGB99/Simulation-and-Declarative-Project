@@ -48,13 +48,13 @@ main :: IO ()
 main  =   do 
         let g = mkStdGen 50  
         let t = 5
-        let t_final = 4
-        let number_columns = 7
+        let t_final = 10
+        let number_columns = 4
         let number_rows = 6
         let robots = [Agent "Robot" 1 2, Agent "Robot" 0 1] 
-        let children = [Agent "Child" 0 1]
-        let corrals = [Agent "Corral" 0 4]
-        let obstacles = [Agent "Obstacle" 4 3, Agent "Obstacle" 1 5]
+        let children = [Agent "Child" 3 1]
+        let corrals = [Agent "Corral" 0 3]
+        let obstacles = [Agent "Obstacle" 2 3, Agent "Obstacle" 1 5]
         let dirt = [] 
         let agents = [robots, children, corrals,  obstacles, dirt]
         let init_envi = createInitialEnvironment number_rows number_columns t t_final agents []
@@ -68,10 +68,10 @@ main  =   do
 simulation :: Environment ->  StdGen -> Environment
 simulation envi  g =  do 
                         let envi_robots =  alterRobots envi (robots envi)
-                        let (envi_children,g1) = alterChildren envi (children envi ) g
+                        let (envi_children,g1) = alterChildren envi_robots (children envi ) g
                         let t_final = (t_Final envi_children) - 1
                         let t = (t_Rnd envi_children) - 1
-                        let new_envi = changeTimeEnvironment envi_children t t_final
+                        let new_envi = changeTimeEnvironment envi_children t t_final 
                         if t_Final new_envi  > 0 then simulation (printTable new_envi (number_Columns new_envi) (number_Rows new_envi) 0 0 "")  g1
                         else printTable new_envi (number_Columns new_envi) (number_Rows new_envi) 0 0 "" 
 
@@ -79,7 +79,7 @@ simulation envi  g =  do
 alterRobots :: Environment ->  [Agent] -> Environment
 alterRobots envi []  =  envi 
 alterRobots envi (robot:xs)  = let actions = generateRobotsActions envi (row robot) (column robot) 
-                                   new_env = executeRobotActions envi (row robot) (column robot) actions  in alterRobots new_env xs  
+                                   new_env = traceShow (("Acciones de los Robots: ",actions)) ( executeRobotActions envi (row robot) (column robot) actions ) in alterRobots new_env xs  
 
 
 alterChildren :: Environment -> [Agent] -> StdGen -> (Environment,StdGen)
@@ -199,14 +199,6 @@ generateRobotsActions envi row column  =  let robot = Agent "Robot" row column
                                                                        else [ Action "clean up" (m2!!0) ]
                                                             else [Action "move" (row,column)]           
 
-
---Execute Robots Actions 
---executeRobotActions :: Environment -> Int -> Int ->  [Action ] -> Environment
---executeRobotActions envi row column [] = envi
---executeRobotActions envi row column (action:xs) = if  (name action) ==  "move" then let  new =  executeRobotMove envi row column action in executeRobotActions new row column xs else envi  
-                                                                        --"clean up"-> let new =  executeRobotCleanUp envi row column action in executeRobotActions new row column xs   
-                                                                         --"pick up child" -> let new = trace("mooas") executeRobotPickUpChild envi row column action in executeRobotActions new row column xs
-                                                                         --"leave child"-> let new =  executeRobotLeaveChild envi row column action in executeRobotActions new row column xs
 
 --Execute Robots Actions 
 executeRobotActions :: Environment -> Int -> Int ->  [Action ] -> Environment
