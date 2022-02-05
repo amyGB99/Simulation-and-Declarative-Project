@@ -52,9 +52,9 @@ main  =   do
         let number_columns = 4
         let number_rows = 6
         let robots = [Agent "Robot" 1 2, Agent "Robot" 0 1] 
-        let children = [Agent "Child" 3 1]
+        let children = [Agent "Child" 0 1]
         let corrals = [Agent "Corral" 0 3]
-        let obstacles = [Agent "Obstacle" 2 3, Agent "Obstacle" 1 5]
+        let obstacles = [Agent "Obstacle" 4 3, Agent "Obstacle" 1 3]
         let dirt = [] 
         let agents = [robots, children, corrals,  obstacles, dirt]
         let init_envi = createInitialEnvironment number_rows number_columns t t_final agents []
@@ -248,14 +248,15 @@ expand envi i j way visited pending  =  let adjacents = generateAdjacents i j
                                             y = inBoard envi adjacents
                                             (new_list, new_visited ) = isVisited visited y []
                                             new_pending = addAdjacentPending new_list way pending 
-                                            in ( new_visited, new_pending)
-                              
-isVisited:: [(Int, Int)] -> [(Int, Int)] -> [(Int, Int)] -> ([(Int, Int)], [(Int, Int)])
+                                            in ( new_visited, new_pending)                              
+
+--Verificar si ciertas posiciones estan visitadas.
 isVisited visited [] result =  (result, visited) 
 isVisited visited (adj: xs) result  = if adj `elem` visited
                               then isVisited visited xs result 
                               else isVisited (visited ++ [adj]) xs (result ++ [adj])
 
+--Agregar a los adyacentes a pendintes con el camino generado hasta el momento 
 addAdjacentPending :: [(Int, Int)] -> [(Int, Int)] -> [((Int,Int),[(Int,Int)])] -> [((Int,Int),[(Int,Int)])] 
 addAdjacentPending  []      way  pending  = pending
 addAdjacentPending (adj: xs) way  pending =  let new = (adj, way ++ [adj]) 
@@ -268,11 +269,12 @@ generateAdjacents i j = let x1  = (i - 1 , j )
                             x4= ( i , j - 1 )
                             in [x1,x2,x3,x4] 
 
+--Dado una lista de posiciones devuelve las que estan en los limites del tablero
 inBoard :: Environment -> [(Int,Int)] -> [(Int,Int)] 
 inBoard envi [] = []
 inBoard envi (x:xs) =  if  verifyInBoard envi (fst x) (snd x)  then [x] ++ inBoard envi xs  else  inBoard envi xs                       
 
-
+--validar si una posicion puede ser expandida 
 validateAdjacent:: Environment -> Int -> Int -> Int -> Int -> Bool
 validateAdjacent envi row column i j | row == i && column == j = True 
                                      | verifyIsEmpty envi i j = True
@@ -283,6 +285,7 @@ construct :: [Agent] -> [(Int,Int)] -> [(Agent,[(Int,Int)] )]
 construct [] list = []
 construct (x : xs) list  = (x,list) : construct xs list
 
+--Retorna los agentes de interes que estan en una posicion 
 returnAgent:: Environment -> Int -> Int -> [Agent]
 returnAgent envi i j =  let item =  [ x | x  <- children envi ,row x == i , column x == j] 
                             item1 = [ x | x  <- corrals envi ,row x == i , column x == j]
@@ -318,7 +321,7 @@ takeChildToCorral envi []  = []
 takeChildToCorral envi ( x : xs) = if (type_ (fst x) == "Corral") &&  not (elementBelongs (children envi) (row (fst x)) (column (fst x))) 
                                        then x: takeChildToCorral envi xs 
                                        else takeChildToCorral envi xs
-
+--Buscar nene suelto
 takeChildren :: Environment -> [Agent] -> [(Agent,[(Int,Int)])] -> [(Agent,[(Int,Int)])]
 takeChildren envi []  list = []
 takeChildren envi (children_out:xs)  list = let list1 = takeChildren1 envi children_out list  in list1 ++ takeChildren envi xs list
@@ -327,10 +330,12 @@ takeChildren1 :: Environment -> Agent -> [(Agent,[(Int,Int)])] -> [(Agent,[(Int,
 takeChildren1 envi agent  [] = []
 takeChildren1 envi agent (item:xs) = if agent == (fst item) then item: takeChildren1 envi agent  xs  else takeChildren1 envi agent  xs 
 
+--Busca las suciedades
 takeDirty :: [(Agent,[(Int,Int)])] -> [(Agent,[(Int,Int)])]
 takeDirty []    = []
 takeDirty (item:xs) = let agent = (fst item) in if type_ agent == "Dirt" then item : takeDirty xs else takeDirty xs
-                                            
+
+-- De caminos a agentes del mismo tipo devuelve el min                                             
 minimalPath :: [(Agent,[(Int,Int)])] -> Int ->  (Agent,[(Int,Int)]) -> (Agent,[(Int,Int)]) 
 minimalPath [] min result = result
 minimalPath (x:xs) (-1) result  = let min1 = length (snd x) in minimalPath xs min1  x
