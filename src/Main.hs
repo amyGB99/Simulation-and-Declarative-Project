@@ -114,11 +114,11 @@ generateSquaresMoveChild envi i j gen = let x1  = (i - 1 , j )
                                             x3 = (i + 1, j )
                                             x4 = ( i , j - 1 ) 
                                            in let list  =  verifySquareMoveChild envi [x1,x2,x3,x4] []                   
-                                                  ind = (length list)
+                                                  ind = (length list) -1
                                                   in if ind > 0
                                                      then let (m,g) = randomR (0, ind) gen 
                                                             in (g , list!!m) 
-                                                           -- in (gen,(1,1))
+                                                            --in (gen,(1,1))
                                                       else let x = (gen,(i,j)) 
                                                                in x
                                                 
@@ -169,9 +169,9 @@ executeChildDirt envi  pos_i pos_f gen = let (i,j) = pos_i
                                              (i_f , j_f) = pos_f
                                              list = generateSquare3x3 i j
                                              empty =  returnEmptyIn3x3 envi (i_f , j_f) list  [] 
-                                             count_children = traceShow (empty) countChildrenIn3x3 envi list 0
+                                             --count_children = traceShow (empty) countChildrenIn3x3 envi list 0
                                              in if (length empty) > 0
-                                                then let (m,g2) = randomR (0, (length empty) - 1 ) gen 
+                                                then let (m,g2) = randomR (0, (length empty) -1) gen 
                                                          s =  createDirt envi (empty!!m) 
                                                          in (s,g2)
                                                 else (envi,gen)         
