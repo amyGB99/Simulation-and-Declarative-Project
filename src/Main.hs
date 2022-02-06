@@ -117,8 +117,8 @@ generateSquaresMoveChild envi i j gen = let x1  = (i - 1 , j )
                                                   ind = (length list)
                                                   in if ind > 0
                                                      then let (m,g) = randomR (0, ind) gen 
-                                                            --in (g , list!!m) 
-                                                            in (gen,(1,1))
+                                                            in (g , list!!m) 
+                                                           -- in (gen,(1,1))
                                                       else let x = (gen,(i,j)) 
                                                                in x
                                                 
